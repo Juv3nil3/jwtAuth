@@ -4,6 +4,7 @@ import com.example.jwtAuth.dtos.responses.UserResponse;
 import com.example.jwtAuth.mapper.UserMapper;
 import com.example.jwtAuth.models.User;
 import com.example.jwtAuth.repository.UserRepository;
+import org.apache.commons.validator.routines.EmailValidator;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -21,20 +22,30 @@ public class UserService {
     private PasswordEncoder passwordEncoder;
 
     public void changeEmail(String username, String newEmail) {
-        Optional<User> userOptional = userRepository.findByEmail(username);
-        userOptional.ifPresent(user -> {
-            user.setEmail(newEmail);
-            userRepository.save(user);
-        });
+        if(EmailValidator.getInstance().isValid(newEmail)) {
+            Optional<User> userOptional = userRepository.findByEmail(username);
+            userOptional.ifPresent(user -> {
+                user.setEmail(newEmail);
+                userRepository.save(user);
+            });
+        }
+        else{
+            throw new IllegalArgumentException("Invalid email address");
+        }
     }
 
 
     public void createUser(String email, String password){
-        User user = User.builder()
-                        .email(email)
-                        .password(passwordEncoder.encode(password))
+        if(EmailValidator.getInstance().isValid(email)){
+            User user = User.builder()
+                    .email(email)
+                    .password(passwordEncoder.encode(password))
                     .build();
 
-        userRepository.save(user);
+            userRepository.save(user);
+        }
+        else{
+            throw new IllegalArgumentException("Invalid email address");
+        }
     }
 }

@@ -25,9 +25,14 @@ public class UserController {
 
     @GetMapping("/change-email")
     public String changeEmail(@RequestBody EmailRequest emailRequest, Principal principal){
-        String username = principal.getName();
-        userService.changeEmail(username, emailRequest.getNewEmail());
-        return "Email changed Successfully";
+        try{
+            String username = principal.getName();
+            userService.changeEmail(username, emailRequest.getNewEmail());
+            return "Email changed Successfully, Please Login with New Email";
+        } catch (Exception e){
+            return e.getMessage();
+        }
+
     }
 
 }
