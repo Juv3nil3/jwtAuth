@@ -40,8 +40,10 @@ public class AuthController {
     private Logger logger = LoggerFactory.getLogger(AuthController.class);
 
     @PostMapping("/register")
-    public User register (@RequestBody User user){
-        return userService.createUser(user);
+    public String register (@RequestBody JwtRequest request){
+        userService.createUser(request.getEmail(), request.getPassword());
+
+        return "User Register Successfully";
     }
 
     @PostMapping("/login")
