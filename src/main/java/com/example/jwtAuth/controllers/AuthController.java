@@ -1,8 +1,7 @@
 package com.example.jwtAuth.controllers;
 
-import com.example.jwtAuth.models.JwtRequest;
-import com.example.jwtAuth.models.JwtResponse;
-import com.example.jwtAuth.models.User;
+import com.example.jwtAuth.dtos.requests.JwtRequest;
+import com.example.jwtAuth.dtos.responses.JwtResponse;
 import com.example.jwtAuth.security.JwtHelper;
 import com.example.jwtAuth.services.UserService;
 import lombok.RequiredArgsConstructor;
@@ -17,8 +16,6 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.web.bind.annotation.*;
-
-import static org.springframework.http.HttpStatus.OK;
 
 @RestController
 @RequiredArgsConstructor

@@ -1,4 +1,4 @@
-package com.example.jwtAuth.models;
+package com.example.jwtAuth.dtos.responses;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -9,7 +9,7 @@ import lombok.NoArgsConstructor;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class JwtRequest {
+public class UserResponse {
 
     private String email;
     private String password;

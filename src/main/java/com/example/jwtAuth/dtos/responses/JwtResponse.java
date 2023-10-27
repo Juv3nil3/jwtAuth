@@ -1,4 +1,4 @@
-package com.example.jwtAuth.models;
+package com.example.jwtAuth.dtos.responses;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
