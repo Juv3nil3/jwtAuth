@@ -17,6 +17,7 @@ import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
+import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
@@ -39,14 +40,19 @@ public class AuthController {
     private Logger logger = LoggerFactory.getLogger(AuthController.class);
 
     @PostMapping("/register")
-    public String register (@Valid @RequestBody JwtRequest request){
-        userService.createUser(request.getEmail(), request.getPassword());
+    public ResponseEntity<String> register (@Valid @RequestBody JwtRequest request){
+        try{
+            userService.createUser(request.getEmail(), request.getPassword());
 
-        return "User Register Successfully";
+            return ResponseEntity.ok("User Registered Successfully");
+        } catch (Exception e){
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(e.getMessage());
+        }
+
     }
 
     @PostMapping("/login")
-    public ResponseEntity<JwtResponse> login(@RequestBody JwtRequest request) {
+    public ResponseEntity<JwtResponse> login(@Valid @RequestBody JwtRequest request) {
 
         this.doAuthenticate(request.getEmail(), request.getPassword());
 
@@ -71,10 +77,5 @@ public class AuthController {
             throw new BadCredentialsException(" Invalid Username or Password  !!");
         }
 
-    }
-
-    @ExceptionHandler(BadCredentialsException.class)
-    public String exceptionHandler() {
-        return "Credentials Invalid !!";
     }
 }

@@ -28,7 +28,7 @@ public class UserController {
             String username = principal.getName();
             userService.changeEmail(username, emailRequest.getNewEmail());
             return "Email changed Successfully, Please Login with New Email";
-        } catch (Exception e){
+        } catch (IllegalArgumentException e){
             return e.getMessage();
         }
 

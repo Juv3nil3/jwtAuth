@@ -1,11 +1,8 @@
 package com.example.jwtAuth.services;
 
 import com.example.jwtAuth.dtos.requests.PasswordRequest;
-import com.example.jwtAuth.dtos.responses.UserResponse;
-import com.example.jwtAuth.mapper.UserMapper;
 import com.example.jwtAuth.models.User;
 import com.example.jwtAuth.repository.UserRepository;
-import org.apache.commons.validator.routines.EmailValidator;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -23,31 +20,24 @@ public class UserService {
     private PasswordEncoder passwordEncoder;
 
     public void changeEmail(String username, String newEmail) {
-        if(EmailValidator.getInstance().isValid(newEmail)) {
-            Optional<User> userOptional = userRepository.findByEmail(username);
-            userOptional.ifPresent(user -> {
-                user.setEmail(newEmail);
-                userRepository.save(user);
-            });
-        }
-        else{
-            throw new IllegalArgumentException("Invalid email address");
-        }
+
+        Optional<User> userOptional = userRepository.findByEmail(username);
+        userOptional.ifPresent(user -> {
+            user.setEmail(newEmail);
+            userRepository.save(user);
+        });
     }
 
 
     public void createUser(String email, String password){
-        if(EmailValidator.getInstance().isValid(email)){
-            User user = User.builder()
-                    .email(email)
-                    .password(passwordEncoder.encode(password))
-                    .build();
 
-            userRepository.save(user);
-        }
-        else{
-            throw new IllegalArgumentException("Invalid email address");
-        }
+        User user = User.builder()
+                .email(email)
+                .password(passwordEncoder.encode(password))
+                .build();
+
+        userRepository.save(user);
+
     }
 
     public void changePassword(String username, PasswordRequest passwordRequest) {
