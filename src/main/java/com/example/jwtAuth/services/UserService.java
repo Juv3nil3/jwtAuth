@@ -1,5 +1,6 @@
 package com.example.jwtAuth.services;
 
+import com.example.jwtAuth.dtos.requests.PasswordRequest;
 import com.example.jwtAuth.dtos.responses.UserResponse;
 import com.example.jwtAuth.mapper.UserMapper;
 import com.example.jwtAuth.models.User;
@@ -47,5 +48,18 @@ public class UserService {
         else{
             throw new IllegalArgumentException("Invalid email address");
         }
+    }
+
+    public void changePassword(String username, PasswordRequest passwordRequest) {
+        Optional<User> userOptional = userRepository.findByEmail(username);
+        User user = userOptional.get();
+
+        if(!passwordEncoder.matches(passwordRequest.getCurrentPassword(), user.getPassword())) {
+            throw new IllegalArgumentException("Invalid current password");
+        }
+
+        String newPasswordHash = passwordEncoder.encode(passwordRequest.getNewPassword());
+        user.setPassword(newPasswordHash);
+        userRepository.save(user);
     }
 }

@@ -2,6 +2,7 @@ package com.example.jwtAuth.models;
 
 import jakarta.persistence.*;
 import jakarta.validation.constraints.Email;
+import jakarta.validation.constraints.NotBlank;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
 import org.springframework.security.core.GrantedAuthority;
@@ -20,11 +21,11 @@ public class User implements UserDetails {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     int userId;
 
-    @Email(message = "Invalid Email!")
+
     @Column(unique = true)
     String email;
 
-    @Column(nullable = false)
+    @NotBlank(message = "Password must not be blank")
     String password;
 
     @Override

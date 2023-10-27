@@ -4,7 +4,9 @@ import com.example.jwtAuth.dtos.requests.JwtRequest;
 import com.example.jwtAuth.dtos.responses.JwtResponse;
 import com.example.jwtAuth.security.JwtHelper;
 import com.example.jwtAuth.services.UserService;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.apache.commons.validator.routines.EmailValidator;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -37,7 +39,7 @@ public class AuthController {
     private Logger logger = LoggerFactory.getLogger(AuthController.class);
 
     @PostMapping("/register")
-    public String register (@RequestBody JwtRequest request){
+    public String register (@Valid @RequestBody JwtRequest request){
         userService.createUser(request.getEmail(), request.getPassword());
 
         return "User Register Successfully";

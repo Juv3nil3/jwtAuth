@@ -15,8 +15,5 @@ import org.springframework.stereotype.Component;
 @AllArgsConstructor
 public class EmailRequest {
 
-    @Valid
-    @Email(message = "Invalid email")
-    @Column(unique = true)
     private String newEmail;
 }
