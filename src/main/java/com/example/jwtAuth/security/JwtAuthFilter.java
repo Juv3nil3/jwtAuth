@@ -31,18 +31,22 @@ public class JwtAuthFilter extends OncePerRequestFilter {
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
         String requestHeader = request.getHeader("Authorization");
-        String username = null;
-        String token = null;
 
         if (requestHeader != null && requestHeader.startsWith("Bearer")) {
-            token = requestHeader.substring(7);
+            String token = requestHeader.substring(7);
             try {
-                username = this.jwtHelper.getUsernameFromToken(token);
+                String username = this.jwtHelper.getUsernameFromToken(token);
 
                 if (this.jwtHelper.isTokenExpired(token)) {
                     response.sendError(HttpServletResponse.SC_UNAUTHORIZED, "Invalid Token");
                     return; // Do not proceed with the filter chain when the token is expired
                 }
+
+                UserDetails userDetails = this.userDetailsService.loadUserByUsername(username);
+                UsernamePasswordAuthenticationToken authentication = new UsernamePasswordAuthenticationToken(
+                        userDetails, null, userDetails.getAuthorities());
+                authentication.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
+                SecurityContextHolder.getContext().setAuthentication(authentication);
 
             } catch (IllegalArgumentException e) {
                 logger.info("Illegal Argument while fetching the username !!");
@@ -61,18 +65,7 @@ public class JwtAuthFilter extends OncePerRequestFilter {
                 response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Internal Server Error");
                 return;
             }
-        } else {
-            logger.info("Invalid Header Value !!");
-            response.sendError(HttpServletResponse.SC_UNAUTHORIZED, "Invalid Token");
-            return;
         }
-
-        // Token is valid, proceed with the filter chain
-        UserDetails userDetails = this.userDetailsService.loadUserByUsername(username);
-        UsernamePasswordAuthenticationToken authentication = new UsernamePasswordAuthenticationToken(
-                userDetails, null, userDetails.getAuthorities());
-        authentication.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
-        SecurityContextHolder.getContext().setAuthentication(authentication);
 
         filterChain.doFilter(request, response);
     }
