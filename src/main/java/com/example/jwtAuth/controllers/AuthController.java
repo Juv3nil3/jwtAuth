@@ -3,6 +3,7 @@ package com.example.jwtAuth.controllers;
 import com.example.jwtAuth.dtos.requests.JwtRequest;
 import com.example.jwtAuth.dtos.responses.JwtResponse;
 import com.example.jwtAuth.security.JwtHelper;
+import com.example.jwtAuth.services.AuthService;
 import com.example.jwtAuth.services.UserService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -17,7 +18,6 @@ import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
-import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
@@ -26,56 +26,34 @@ import org.springframework.web.bind.annotation.*;
 public class AuthController {
 
     @Autowired
-    private UserDetailsService userDetailsService;
-
-    @Autowired
-    private AuthenticationManager manager;
-
-    @Autowired
-    private UserService userService;
-
-    @Autowired
-    private JwtHelper helper;
+    private AuthService authService;
 
     private Logger logger = LoggerFactory.getLogger(AuthController.class);
 
     @PostMapping("/register")
     public ResponseEntity<String> register (@Valid @RequestBody JwtRequest request){
         try{
-            userService.createUser(request.getEmail(), request.getPassword());
-
+            authService.registerUser(request.getEmail(), request.getPassword());
             return ResponseEntity.ok("User Registered Successfully");
-        } catch (Exception e){
+        }
+        catch (Exception e) {
+            logger.error("Error occurred during user registration: {}", e.getMessage());
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(e.getMessage());
         }
-
     }
 
     @PostMapping("/login")
     public ResponseEntity<JwtResponse> login(@Valid @RequestBody JwtRequest request) {
 
-        this.doAuthenticate(request.getEmail(), request.getPassword());
+        String email = request.getEmail();
+        String password = request.getPassword();
 
-
-        UserDetails userDetails = userDetailsService.loadUserByUsername(request.getEmail());
-        String token = this.helper.generateToken(userDetails);
+        String token = authService.authenticateUserAndGetToken(email, password);
 
         JwtResponse response = JwtResponse.builder()
                 .jwtToken(token)
-                .username(userDetails.getUsername()).build();
-        return new ResponseEntity<>(response, HttpStatus.OK);
-    }
-
-    private void doAuthenticate(String email, String password) {
-
-        UsernamePasswordAuthenticationToken authentication = new UsernamePasswordAuthenticationToken(email, password);
-        try {
-            manager.authenticate(authentication);
-
-
-        } catch (BadCredentialsException e) {
-            throw new BadCredentialsException(" Invalid Username or Password  !!");
-        }
-
+                .username(email) // Assuming email is the username
+                .build();
+        return ResponseEntity.ok(response);
     }
 }

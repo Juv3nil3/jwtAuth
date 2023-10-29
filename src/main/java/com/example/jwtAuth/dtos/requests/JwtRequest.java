@@ -18,5 +18,6 @@ public class JwtRequest {
     private String email;
 
     @NotBlank(message = "Password must not be empty")
+    @Size(min = 4, message = "Password must be at least 4 characters long")
     private String password;
 }

@@ -13,9 +13,9 @@ import java.util.function.Function;
 
 @Component
 public class JwtHelper {
-    public static final long JWT_TOKEN_VALIDITY = 5 * 60 * 60;
+    public static final long JWT_TOKEN_VALIDITY =  15 * 60;
 
-    //    public static final long JWT_TOKEN_VALIDITY =  60;
+
     private String secret = "afafasfafafasfasfasfafacasdasfasxASFACASDFACASDFASFASFDAFASFASDAADSCSDFADCVSGCFVADXCcadwavfsfarvf";
 
     //retrieve username from jwt token
@@ -39,7 +39,7 @@ public class JwtHelper {
     }
 
     //check if the token has expired
-    private Boolean isTokenExpired(String token) {
+    Boolean isTokenExpired(String token) {
         final Date expiration = getExpirationDateFromToken(token);
         return expiration.before(new Date());
     }

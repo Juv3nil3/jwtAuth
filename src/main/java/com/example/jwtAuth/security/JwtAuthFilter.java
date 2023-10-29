@@ -30,59 +30,51 @@ public class JwtAuthFilter extends OncePerRequestFilter {
     private UserDetailsService userDetailsService;
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
-
         String requestHeader = request.getHeader("Authorization");
-
-        logger.info(" Header :  {}", requestHeader);
         String username = null;
         String token = null;
+
         if (requestHeader != null && requestHeader.startsWith("Bearer")) {
-            //looking good
             token = requestHeader.substring(7);
             try {
-
                 username = this.jwtHelper.getUsernameFromToken(token);
+
+                if (this.jwtHelper.isTokenExpired(token)) {
+                    response.sendError(HttpServletResponse.SC_UNAUTHORIZED, "Invalid Token");
+                    return; // Do not proceed with the filter chain when the token is expired
+                }
 
             } catch (IllegalArgumentException e) {
                 logger.info("Illegal Argument while fetching the username !!");
-                e.printStackTrace();
+                response.sendError(HttpServletResponse.SC_UNAUTHORIZED, "Invalid Token");
+                return;
             } catch (ExpiredJwtException e) {
                 logger.info("Given jwt token is expired !!");
-                e.printStackTrace();
+                response.sendError(HttpServletResponse.SC_UNAUTHORIZED, "Invalid Token");
+                return;
             } catch (MalformedJwtException e) {
-                logger.info("Some changed has done in token !! Invalid Token");
-                e.printStackTrace();
+                logger.info("Some changes have been made in the token !! Invalid Token");
+                response.sendError(HttpServletResponse.SC_UNAUTHORIZED, "Invalid Token");
+                return;
             } catch (Exception e) {
-                e.printStackTrace();
-
+                logger.error("Error occurred while processing the token");
+                response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Internal Server Error");
+                return;
             }
-
-
         } else {
-            logger.info("Invalid Header Value !! ");
+            logger.info("Invalid Header Value !!");
+            response.sendError(HttpServletResponse.SC_UNAUTHORIZED, "Invalid Token");
+            return;
         }
 
-        if (username != null && SecurityContextHolder.getContext().getAuthentication() == null) {
-
-
-            //fetch user detail from username
-            UserDetails userDetails = this.userDetailsService.loadUserByUsername(username);
-            Boolean validateToken = this.jwtHelper.validateToken(token, userDetails);
-            if (validateToken) {
-
-                //set the authentication
-                UsernamePasswordAuthenticationToken authentication = new UsernamePasswordAuthenticationToken(userDetails, null, userDetails.getAuthorities());
-                authentication.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
-                SecurityContextHolder.getContext().setAuthentication(authentication);
-
-
-            } else {
-                logger.info("Validation fails !!");
-            }
-
-
-        }
+        // Token is valid, proceed with the filter chain
+        UserDetails userDetails = this.userDetailsService.loadUserByUsername(username);
+        UsernamePasswordAuthenticationToken authentication = new UsernamePasswordAuthenticationToken(
+                userDetails, null, userDetails.getAuthorities());
+        authentication.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
+        SecurityContextHolder.getContext().setAuthentication(authentication);
 
         filterChain.doFilter(request, response);
     }
+
 }
